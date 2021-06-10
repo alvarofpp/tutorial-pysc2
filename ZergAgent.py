@@ -10,8 +10,7 @@ class ZergAgent(base_agent.BaseAgent):
         spawning_pools = self.get_units_by_type(obs, units.Zerg.SpawningPool)
         if len(spawning_pools) == 0:
             if self.unit_type_is_selected(obs, units.Zerg.Drone):
-                if (actions.FUNCTIONS.Build_SpawningPool_screen.id in
-                        obs.observation.available_actions):
+                if self.can_do(obs, actions.FUNCTIONS.Build_SpawningPool_screen.id):
                     x = random.randint(0, 83)
                     y = random.randint(0, 83)
 
@@ -23,14 +22,17 @@ class ZergAgent(base_agent.BaseAgent):
                 return actions.FUNCTIONS.select_point('select_all_type', (drone.x, drone.y))
 
         if self.unit_type_is_selected(obs, units.Zerg.Larva):
-            if (actions.FUNCTIONS.Train_Zergling_quick.id in
-                    obs.observation.available_actions):
+            free_supply = (obs.observation.player.food_cap - obs.observation.player.food_used)
+            if free_supply == 0:
+                if self.can_do(obs, actions.FUNCTIONS.Train_Overlord_quick.id):
+                    return actions.FUNCTIONS.Train_Overlord_quick('now')
+
+            if self.can_do(obs, actions.FUNCTIONS.Train_Zergling_quick.id):
                 return actions.FUNCTIONS.Train_Zergling_quick('now')
 
         larvae = self.get_units_by_type(obs, units.Zerg.Larva)
         if len(larvae) > 0:
             larva = random.choice(larvae)
-
             return actions.FUNCTIONS.select_point('select_all_type', (larva.x, larva.y))
 
         return actions.FUNCTIONS.no_op()
@@ -49,3 +51,6 @@ class ZergAgent(base_agent.BaseAgent):
     def get_units_by_type(self, obs, unit_type):
         return [unit for unit in obs.observation.feature_units
                 if unit.unit_type == unit_type]
+
+    def can_do(self, obs, action):
+        return action in obs.observation.available_actions
