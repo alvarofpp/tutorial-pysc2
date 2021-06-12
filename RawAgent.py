@@ -13,6 +13,12 @@ class RawAgent(base_agent.BaseAgent):
                 if unit.unit_type == unit_type
                 and unit.alliance == features.PlayerRelative.SELF]
 
+    def get_my_completed_units_by_type(self, obs, unit_type):
+        return [unit for unit in obs.observation.raw_units
+                if unit.unit_type == unit_type
+                and unit.build_progress == 100
+                and unit.alliance == features.PlayerRelative.SELF]
+
     def get_distances(self, obs, units, xy):
         units_xy = [(unit.x, unit.y) for unit in units]
         return np.linalg.norm(np.array(units_xy) - np.array(xy), axis=1)
@@ -25,6 +31,10 @@ class RawAgent(base_agent.BaseAgent):
             self.base_top_left = (nexus.x < 32)
 
         pylons = self.get_my_units_by_type(obs, units.Protoss.Pylon)
+        completed_pylons = self.get_my_completed_units_by_type(
+            obs, units.Protoss.Pylon)
+
+        gateways = self.get_my_units_by_type(obs, units.Protoss.Gateway)
 
         if len(pylons) == 0 and obs.observation.player.minerals >= 100:
             probes = self.get_my_units_by_type(obs, units.Protoss.Probe)
@@ -33,5 +43,15 @@ class RawAgent(base_agent.BaseAgent):
                 distances = self.get_distances(obs, probes, pylon_xy)
                 probe = probes[np.argmin(distances)]
                 return actions.RAW_FUNCTIONS.Build_Pylon_pt("now", probe.tag, pylon_xy)
+
+        if (len(completed_pylons) > 0 and len(gateways) == 0 and
+                obs.observation.player.minerals >= 150):
+            probes = self.get_my_units_by_type(obs, units.Protoss.Probe)
+            if len(probes) > 0:
+                gateway_xy = (22, 24) if self.base_top_left else (35, 45)
+                distances = self.get_distances(obs, probes, gateway_xy)
+                probe = probes[np.argmin(distances)]
+                return actions.RAW_FUNCTIONS.Build_Gateway_pt(
+                    "now", probe.tag, gateway_xy)
 
         return actions.RAW_FUNCTIONS.no_op()
