@@ -1,3 +1,4 @@
+import random
 import numpy as np
 from pysc2.agents import base_agent
 from pysc2.lib import actions, features, units
@@ -41,6 +42,8 @@ class RawAgent(base_agent.BaseAgent):
         free_supply = (obs.observation.player.food_cap -
                        obs.observation.player.food_used)
 
+        zealots = self.get_my_units_by_type(obs, units.Protoss.Zealot)
+
         if len(pylons) == 0 and obs.observation.player.minerals >= 100:
             probes = self.get_my_units_by_type(obs, units.Protoss.Probe)
             if len(probes) > 0:
@@ -64,5 +67,14 @@ class RawAgent(base_agent.BaseAgent):
             gateway = gateways[0]
             if gateway.order_length < 5:
                 return actions.RAW_FUNCTIONS.Train_Zealot_quick("now", gateway.tag)
+
+        if free_supply < 2 and len(zealots) > 0:
+            attack_xy = (38, 44) if self.base_top_left else (19, 23)
+            distances = self.get_distances(obs, zealots, attack_xy)
+            zealot = zealots[np.argmax(distances)]
+            x_offset = random.randint(-4, 4)
+            y_offset = random.randint(-4, 4)
+            return actions.RAW_FUNCTIONS.Attack_pt(
+                "now", zealot.tag, (attack_xy[0] + x_offset, attack_xy[1] + y_offset))
 
         return actions.RAW_FUNCTIONS.no_op()
