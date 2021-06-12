@@ -35,6 +35,11 @@ class RawAgent(base_agent.BaseAgent):
             obs, units.Protoss.Pylon)
 
         gateways = self.get_my_units_by_type(obs, units.Protoss.Gateway)
+        completed_gateways = self.get_my_completed_units_by_type(
+            obs, units.Protoss.Gateway)
+
+        free_supply = (obs.observation.player.food_cap -
+                       obs.observation.player.food_used)
 
         if len(pylons) == 0 and obs.observation.player.minerals >= 100:
             probes = self.get_my_units_by_type(obs, units.Protoss.Probe)
@@ -53,5 +58,11 @@ class RawAgent(base_agent.BaseAgent):
                 probe = probes[np.argmin(distances)]
                 return actions.RAW_FUNCTIONS.Build_Gateway_pt(
                     "now", probe.tag, gateway_xy)
+
+        if (len(completed_gateways) > 0 and obs.observation.player.minerals >= 100
+                and free_supply >= 2):
+            gateway = gateways[0]
+            if gateway.order_length < 5:
+                return actions.RAW_FUNCTIONS.Train_Zealot_quick("now", gateway.tag)
 
         return actions.RAW_FUNCTIONS.no_op()
