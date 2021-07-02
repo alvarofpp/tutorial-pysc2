@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  scii-game:
+    build: .
+    #image: alvarofpp/sc2le
+    ports:
+      - "12000:12000"
+    volumes:
+      - ./:/data/volume
+#docker run -p 80:80 -it alvarofpp/sc2le
