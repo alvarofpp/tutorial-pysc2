@@ -1,7 +1,4 @@
 import random
-import numpy as np
-from pysc2.agents import base_agent
-from pysc2.lib import actions, features, units
 from Agent import Agent
 
 

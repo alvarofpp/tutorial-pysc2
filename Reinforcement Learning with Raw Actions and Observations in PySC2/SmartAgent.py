@@ -1,6 +1,6 @@
 from Agent import Agent
 from QLearningTable import QLearningTable
-from pysc2.lib import actions, features, units
+from pysc2.lib import units
 
 
 class SmartAgent(Agent):
