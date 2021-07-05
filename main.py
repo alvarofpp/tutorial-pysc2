@@ -2,10 +2,11 @@ from absl import app
 from pysc2.lib import actions, features
 from pysc2.env import sc2_env, run_loop
 from RandomAgent import RandomAgent
+from SmartAgent import SmartAgent
 
 
 def main(unused_argv):
-    agent1 = RandomAgent()
+    agent1 = SmartAgent()
     agent2 = RandomAgent()
     try:
         with sc2_env.SC2Env(
